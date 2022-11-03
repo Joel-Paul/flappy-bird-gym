@@ -64,7 +64,7 @@ class FlappyBirdEnvSimple(gym.Env):
             be drawn.
     """
 
-    metadata = {'render.modes': ['human']}
+    metadata = {'render.modes': ['human', 'rgb_array']}
 
     def __init__(self,
                  screen_size: Tuple[int, int] = (288, 512),
@@ -155,9 +155,29 @@ class FlappyBirdEnvSimple(gym.Env):
         return self._get_observation()
 
     def render(self, mode='human') -> None:
-        """ Renders the next frame. """
+        """ Renders the environment.
+
+        If ``mode`` is:
+
+            - human: render to the current display. Usually for human
+              consumption.
+            - rgb_array: Return an numpy.ndarray with shape (x, y, 3),
+              representing RGB values for an x-by-y pixel image, suitable
+              for turning into a video.
+
+        Args:
+            mode (str): the mode to render with.
+
+        Returns:
+            `None` if ``mode`` is "human" and a numpy.ndarray with RGB values if
+            it's "rgb_array"
+        """
+        if mode not in FlappyBirdEnvSimple.metadata["render.modes"]:
+            raise ValueError("Invalid render mode!")
+
         if self._renderer is None:
             self._renderer = FlappyBirdRenderer(screen_size=self._screen_size,
+                                                audio_on=False,
                                                 bird_color=self._bird_color,
                                                 pipe_color=self._pipe_color,
                                                 background=self._bg_type)
@@ -165,7 +185,13 @@ class FlappyBirdEnvSimple(gym.Env):
             self._renderer.make_display()
 
         self._renderer.draw_surface(show_score=True)
-        self._renderer.update_display()
+        if mode == "rgb_array":
+            return pygame.surfarray.array3d(self._renderer.surface)
+        else:
+            if self._renderer.display is None:
+                self._renderer.make_display()
+
+            self._renderer.update_display()
 
     def close(self):
         """ Closes the environment. """
