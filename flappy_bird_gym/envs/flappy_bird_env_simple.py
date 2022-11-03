@@ -182,7 +182,6 @@ class FlappyBirdEnvSimple(gym.Env):
                                                 pipe_color=self._pipe_color,
                                                 background=self._bg_type)
             self._renderer.game = self._game
-            self._renderer.make_display()
 
         self._renderer.draw_surface(show_score=True)
         if mode == "rgb_array":
